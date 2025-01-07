@@ -4,23 +4,23 @@ import os
 
 # Streamlit UI
 st.title("YouTube Video Downloader 🎥")
-st.markdown("Paste a YouTube video link below to download it in HD quality.")
+st.markdown("Paste a YouTube video link below to download the highest-quality video (without audio).")
 
 # Input URL
 video_url = st.text_input("Enter YouTube URL:")
 
 if st.button("Download"):
     if video_url:
-        st.info("Processing your video in HD quality...")
+        st.info("Processing your video (video only, no audio)...")
         try:
             # Ensure downloads are saved in a consistent directory
             download_dir = "downloads"
             if not os.path.exists(download_dir):
                 os.makedirs(download_dir)
 
-            # yt-dlp options for best pre-merged format
+            # yt-dlp options for video-only download
             ydl_opts = {
-                'format': 'best[ext=mp4]',  # Only download the best pre-merged MP4 format
+                'format': 'bestvideo',  # Download the best video-only format
                 'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),  # Save to downloads directory
             }
 
@@ -31,10 +31,10 @@ if st.button("Download"):
 
             # Check if the file exists
             if os.path.exists(output_file):
-                st.success(f"Downloaded: {video_title}")
+                st.success(f"Downloaded (Video Only): {video_title}")
                 with open(output_file, "rb") as file:
                     st.download_button(
-                        label="Download MP4",
+                        label="Download Video (MP4)",
                         data=file,
                         file_name=f"{video_title}.mp4",
                         mime="video/mp4",
