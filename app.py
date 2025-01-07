@@ -1,5 +1,6 @@
 import streamlit as st
 from yt_dlp import YoutubeDL
+import os
 
 # Streamlit UI
 st.title("YouTube Video Downloader 🎥")
@@ -12,26 +13,35 @@ if st.button("Download"):
     if video_url:
         st.info("Processing your video...")
         try:
-            # Use yt-dlp to download the best merged format
+            # Ensure downloads are saved in a consistent directory
+            download_dir = "downloads"
+            if not os.path.exists(download_dir):
+                os.makedirs(download_dir)
+
+            # yt-dlp options
             ydl_opts = {
-                'format': 'best',  # Download the best available format already merged
-                'outtmpl': '%(title)s.%(ext)s',  # Save file with the video title as filename
+                'format': 'best',  # Download best pre-merged format
+                'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),  # Save to downloads directory
             }
 
+            # Download video
             with YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(video_url, download=True)
                 video_title = info.get("title", "video")
-                video_file = f"{video_title}.mp4"
+                video_file = os.path.join(download_dir, f"{video_title}.mp4")
 
-            # Provide download link
-            st.success(f"Downloaded: {video_title}")
-            with open(video_file, "rb") as file:
-                st.download_button(
-                    label="Download MP4",
-                    data=file,
-                    file_name=video_file,
-                    mime="video/mp4",
-                )
+            # Provide a download link to the user
+            if os.path.exists(video_file):  # Ensure file exists
+                st.success(f"Downloaded: {video_title}")
+                with open(video_file, "rb") as file:
+                    st.download_button(
+                        label="Download MP4",
+                        data=file,
+                        file_name=f"{video_title}.mp4",
+                        mime="video/mp4",
+                    )
+            else:
+                st.error("The file could not be found after downloading. Please try again.")
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
