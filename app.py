@@ -4,24 +4,23 @@ import os
 
 # Streamlit UI
 st.title("YouTube Video Downloader 🎥")
-st.markdown("Paste a YouTube video link below to download it in the highest quality.")
+st.markdown("Paste a YouTube video link below to download it in the highest available quality.")
 
 # Input URL
 video_url = st.text_input("Enter YouTube URL:")
 
 if st.button("Download"):
     if video_url:
-        st.info("Processing your video in the highest quality...")
+        st.info("Processing your video...")
         try:
             # Ensure downloads are saved in a consistent directory
             download_dir = "downloads"
             if not os.path.exists(download_dir):
                 os.makedirs(download_dir)
 
-            # yt-dlp options for highest quality
+            # yt-dlp options for best pre-merged format
             ydl_opts = {
-                'format': 'bestvideo+bestaudio',  # Download best video and audio separately
-                'merge_output_format': 'mp4',  # Merge into MP4 format
+                'format': 'best[ext=mp4]/bestvideo+bestaudio',  # Try best pre-merged format first
                 'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),  # Save to downloads directory
             }
 
@@ -31,7 +30,7 @@ if st.button("Download"):
                 video_title = info.get("title", "video")
                 output_file = os.path.join(download_dir, f"{video_title}.mp4")
 
-            # Check if merged file exists
+            # Check if the file exists
             if os.path.exists(output_file):
                 st.success(f"Downloaded: {video_title}")
                 with open(output_file, "rb") as file:
@@ -42,7 +41,7 @@ if st.button("Download"):
                         mime="video/mp4",
                     )
             else:
-                st.error("The merging process failed. Please try again.")
+                st.error("The file could not be found after downloading. Please try again.")
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
