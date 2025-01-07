@@ -1,6 +1,7 @@
 import streamlit as st
 from yt_dlp import YoutubeDL
 import os
+import subprocess
 
 # Streamlit UI
 st.title("YouTube Video Downloader 🎥")
@@ -18,36 +19,42 @@ if st.button("Download"):
             if not os.path.exists(download_dir):
                 os.makedirs(download_dir)
 
-            # yt-dlp options for highest-quality video and audio
+            # yt-dlp options to download video and audio separately
             ydl_opts = {
-                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best',  # Ensure highest video and audio quality
-                'merge_output_format': 'mp4',  # Output as MP4
+                'format': 'bestvideo+bestaudio',  # Download best video and audio streams
                 'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),  # Save to downloads directory
-                'postprocessors': [
-                    {  # Merge video and audio into one file
-                        'key': 'FFmpegMerger',
-                    }
-                ],
             }
 
-            # Download video
             with YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(video_url, download=True)
                 video_title = info.get("title", "video")
-                output_file = os.path.join(download_dir, f"{video_title}.mp4")
+                video_file = os.path.join(download_dir, f"{video_title}.mp4")
+                video_stream = os.path.join(download_dir, f"{video_title}.fvideo")
+                audio_stream = os.path.join(download_dir, f"{video_title}.faudio")
 
-            # Check if merged file exists
-            if os.path.exists(output_file):
+            # Debugging: Check downloaded files
+            st.info(f"Downloaded video stream: {video_stream}")
+            st.info(f"Downloaded audio stream: {audio_stream}")
+
+            # Merging video and audio using FFmpeg
+            merged_file = os.path.join(download_dir, f"{video_title}_HD.mp4")
+            merge_command = [
+                "ffmpeg", "-y", "-i", video_stream, "-i", audio_stream, "-c:v", "copy", "-c:a", "aac", merged_file
+            ]
+            subprocess.run(merge_command, check=True)
+
+            # Provide download button
+            if os.path.exists(merged_file):
                 st.success(f"Downloaded in HD: {video_title}")
-                with open(output_file, "rb") as file:
+                with open(merged_file, "rb") as file:
                     st.download_button(
                         label="Download MP4",
                         data=file,
-                        file_name=f"{video_title}.mp4",
+                        file_name=f"{video_title}_HD.mp4",
                         mime="video/mp4",
                     )
             else:
-                st.error("The merging process failed or the file was not found. Please try again.")
+                st.error("The merging process failed. Please try again.")
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
