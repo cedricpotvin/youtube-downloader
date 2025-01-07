@@ -20,33 +20,29 @@ if st.button("Download"):
 
             # yt-dlp options for highest quality
             ydl_opts = {
-                'format': 'bestvideo+bestaudio/best',  # Download best video and audio separately, then merge
-                'merge_output_format': 'mp4',  # Output as MP4 after merging
+                'format': 'bestvideo+bestaudio',  # Download best video and audio separately
+                'merge_output_format': 'mp4',  # Merge into MP4 format
                 'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),  # Save to downloads directory
-                'postprocessors': [
-                    {  # Merges video and audio using FFmpeg (handled internally by yt-dlp)
-                        'key': 'FFmpegMerger',
-                    }
-                ],
             }
 
             # Download video
             with YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(video_url, download=True)
-                video_file = os.path.join(download_dir, f"{info.get('title', 'video')}.mp4")
+                video_title = info.get("title", "video")
+                output_file = os.path.join(download_dir, f"{video_title}.mp4")
 
-            # Provide download button
-            if os.path.exists(video_file):
-                st.success(f"Downloaded: {info.get('title', 'video')}")
-                with open(video_file, "rb") as file:
+            # Check if merged file exists
+            if os.path.exists(output_file):
+                st.success(f"Downloaded: {video_title}")
+                with open(output_file, "rb") as file:
                     st.download_button(
                         label="Download MP4",
                         data=file,
-                        file_name=os.path.basename(video_file),
+                        file_name=f"{video_title}.mp4",
                         mime="video/mp4",
                     )
             else:
-                st.error("The file could not be found after downloading. Please try again.")
+                st.error("The merging process failed. Please try again.")
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
