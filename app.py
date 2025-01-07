@@ -20,28 +20,27 @@ if st.button("Download"):
 
             # yt-dlp options
             ydl_opts = {
-                'format': 'best',  # Download best pre-merged format
+                'format': 'best',  # Download the best available format already merged
                 'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),  # Save to downloads directory
             }
 
             # Download video
             with YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(video_url, download=True)
-                video_title = info.get("title", "video")
-                video_file = os.path.join(download_dir, f"{video_title}.mp4")
+                video_file = ydl.prepare_filename(info)  # Get the actual downloaded filename
 
-            # Provide a download link to the user
-            if os.path.exists(video_file):  # Ensure file exists
-                st.success(f"Downloaded: {video_title}")
+            # Check if the file exists
+            if os.path.exists(video_file):
+                st.success(f"Downloaded: {info.get('title', 'video')}")
                 with open(video_file, "rb") as file:
                     st.download_button(
                         label="Download MP4",
                         data=file,
-                        file_name=f"{video_title}.mp4",
+                        file_name=os.path.basename(video_file),
                         mime="video/mp4",
                     )
             else:
-                st.error("The file could not be found after downloading. Please try again.")
+                st.error("File was not found after downloading. Please try again.")
 
         except Exception as e:
             st.error(f"An error occurred: {e}")
