@@ -20,12 +20,10 @@ if st.button("Download"):
 
             # yt-dlp options for highest resolution video
             ydl_opts = {
-                'format': 'bestvideo[height>=1080]+bestaudio/bestvideo',  # Prefer 1080p or higher video streams
+                'format': 'bestvideo[height>=1080]',  # Prefer 1080p or higher video streams
                 'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),  # Save to downloads directory
-                'merge_output_format': 'mp4',  # Output format if merging is required (audio ignored in this case)
             }
 
-            # Download video
             with YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(video_url, download=True)
                 downloaded_file = ydl.prepare_filename(info)  # Dynamically get the actual filename
