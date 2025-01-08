@@ -27,9 +27,14 @@ if st.button("Download"):
 
             # yt-dlp options
             ydl_opts = {
-                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]',  # High-quality video+audio or best MP4
+                'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]',  # Best video+audio or best MP4
+                'merge_output_format': 'mp4',  # Ensure final file is MP4
                 'outtmpl': os.path.join(download_dir, '%(title)s.%(ext)s'),  # Save to downloads directory
                 'cookiefile': 'cookies.txt',  # Use cookies.txt for authentication
+                'postprocessors': [{
+                    'key': 'FFmpegVideoConvertor',
+                    'preferedformat': 'mp4',  # Ensure final format is MP4
+                }],
                 'http_headers': {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.141 Safari/537.36'
                 }
